@@ -8,7 +8,7 @@
  * @email naguissa@foroelectro.net
  * @url https://www.foroelectro.net/librerias-arduino-ide-f29/ueepromlib-arduino-libreria-simple-y-eficaz-para-e-t225.html
  * @url https://github.com/Naguissa/uEEPROMLib
- * @version 1.0.0
+ * @version 1.0.1
  * @created 2018-07-27
  */
 #ifndef UEEPROMLIB

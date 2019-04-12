@@ -174,7 +174,6 @@ bool uEEPROMLib::eeprom_write(const unsigned int address, void *data, const uint
 	for (i = 0; i < n; i++) {
 		r &= _eeprom_write(address + i, (byte) *(((byte *) data) + i));
 	}
-Serial.println();
 	return r;
 }
 

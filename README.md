@@ -21,7 +21,15 @@ For manual installation:
 
 
 
-## Example ##
+## Documentation and extras ##
+
+You can find all documentation and extras in this repository: https://github.com/Naguissa/uEEPROMLib_doc_and_extras
+
+Due GitHub limitations HTML documentation is not avaliable online, you need to download the zip.
+
+
+
+## Examples ##
 
 Included on example folder, available on Arduino IDE.
 

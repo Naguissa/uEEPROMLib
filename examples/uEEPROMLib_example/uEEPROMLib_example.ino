@@ -25,14 +25,14 @@ unsigned int pos;
 
 void setup() {
 delay (2000);
-	Serial.begin(9600);
+	Serial.begin(115200);
     Serial.println("Serial OK");
 
 	delay(2500);
 	Serial.println("Delay OK");
 
 	#ifdef ARDUINO_ARCH_ESP8266
-		Wire.begin(0, 2); // D3 and D4 on ESP8266
+		Wire.begin(4, 5); // D3 and D4 on ESP8266
 	#else
 		Wire.begin();
 	#endif
@@ -47,7 +47,19 @@ delay (2000);
 	float floattmp = 3.1416;
 	char chartmp = 'A';
 
-    char string[17] = "ForoElectro.Net\0";
+    char c_string[128] = "abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()";
+
+  if (!eeprom.eeprom_write(8, chartmp)) {
+    Serial.println("Failed to store CHAR");
+  } else {
+    Serial.println("CHAR correctly stored");
+  }
+
+  if (!eeprom.eeprom_write(33, (byte *) c_string, strlen(c_string))) {
+    Serial.println("Failed to store STRING");
+  } else {
+    Serial.println("STRING correctly stored");
+  }
 
 
 	// Testing template
@@ -56,27 +68,19 @@ delay (2000);
 	} else {
 		Serial.println("INT correctly stored");
 	}
+
 	if (!eeprom.eeprom_write(4, floattmp)) {
 		Serial.println("Failed to store FLOAT");
 	} else {
 		Serial.println("FLOAT correctly stored");
 	}
-	if (!eeprom.eeprom_write(8, chartmp)) {
-		Serial.println("Failed to store CHAR");
-	} else {
-		Serial.println("CHAR correctly stored");
-	}
-
-	if (!eeprom.eeprom_write(9, (byte *) &string[0], 16)) {
-		Serial.println("Failed to store STRING");
-	} else {
-		Serial.println("STRING correctly stored");
-	}
 
 	inttmp = 0;
 	floattmp = 0;
 	chartmp = 0;
-    string[0] = string[1] = string[2] = string[3] = string[4] = 0;
+
+  Serial.print("C string length is: "); Serial.println(sizeof(c_string), DEC);
+  memset(c_string,0,sizeof(c_string));
 
 
 
@@ -93,20 +97,21 @@ delay (2000);
 	Serial.println(chartmp);
 
 	Serial.print("chararray: ");
-	eeprom.eeprom_read(9, (byte *) &string[0], 16);
-	Serial.println(string);
+	eeprom.eeprom_read(33, (byte *) c_string, 41);
+	Serial.println(c_string);
 
 	Serial.println();
-
 
 	for(pos = 26; pos < 1000; pos++) {
 		eeprom.eeprom_write(pos, (unsigned char) (pos % 256));
 	}
 
 	pos = 0;
+ 
 }
 
 void loop() {
+  
 	Serial.print(pos);
 	Serial.print(": ");
 	Serial.print(eeprom.eeprom_read(pos));
@@ -116,4 +121,5 @@ void loop() {
 	pos++;
 	pos %= 1000;
 	delay(1000);
+
 }

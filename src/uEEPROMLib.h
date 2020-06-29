@@ -58,6 +58,12 @@
 	 * \brief Wire very short delay - needed to give time to EEPROM to process Wire requests
 	 */
 	#define uEEPROMLIB_WIRE_SHORT_DELAY 1
+	
+	/**
+	 * \Serial Debug - To see what's going on in the library
+	 */	
+	 //#define uEEPROMLIB_DEBUG 1
+	
 
 
 

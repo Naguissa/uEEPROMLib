@@ -47,8 +47,9 @@ delay (2000);
 	float floattmp = 3.1416;
 	char chartmp = 'A';
 
-    char c_string[128] = "abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()ABCDEFGHIJKLMNOPQ";
-
+  char c_string[128] = "abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()ABCDEFGHIJKLMNOPQ";
+  int string_length = strlen(c_string);
+  
 	// Write single char at address 
 	if (!eeprom.eeprom_write(8, chartmp)) {
 	Serial.println("Failed to store CHAR");
@@ -80,7 +81,7 @@ delay (2000);
 	// Flush
 	inttmp = floattmp = chartmp = 0;
 
-	Serial.print("C string length is: "); Serial.println(sizeof(c_string), DEC);
+	Serial.print("C string length is: "); Serial.println(string_length, DEC);
 	memset(c_string,0,sizeof(c_string));
 
 	
@@ -97,7 +98,7 @@ delay (2000);
 	Serial.println(chartmp);
 
 	Serial.print("chararray: ");
-	eeprom.eeprom_read(33, (byte *) c_string, sizeof(c_string));
+	eeprom.eeprom_read(33, (byte *) c_string, string_length);
 	Serial.println(c_string);
 
 	Serial.println();

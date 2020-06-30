@@ -41,49 +41,49 @@ delay (2000);
 #ifdef ARDUINO_ARCH_AVR
 	int inttmp = 32123;
 #else
-	// too logng for AVR 16 bits!
+	// too long for AVR 16 bits!
 	int inttmp = 24543557;
 #endif
 	float floattmp = 3.1416;
 	char chartmp = 'A';
 
-    char c_string[128] = "abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()";
+    char c_string[128] = "abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()ABCDEFGHIJKLMNOPQ";
 
-  if (!eeprom.eeprom_write(8, chartmp)) {
-    Serial.println("Failed to store CHAR");
-  } else {
-    Serial.println("CHAR correctly stored");
-  }
+	// Write single char at address 
+	if (!eeprom.eeprom_write(8, chartmp)) {
+	Serial.println("Failed to store CHAR");
+	} else {
+	Serial.println("CHAR correctly stored");
+	}
 
-  if (!eeprom.eeprom_write(33, (byte *) c_string, strlen(c_string))) {
-    Serial.println("Failed to store STRING");
-  } else {
-    Serial.println("STRING correctly stored");
-  }
+	// Write a long string of chars FROM position 33 which isn't aligned to the 32 byte pages of the EEPROM
+	if (!eeprom.eeprom_write(33, (byte *) c_string, strlen(c_string))) {
+	Serial.println("Failed to store STRING");
+	} else {
+	Serial.println("STRING correctly stored");
+	}
 
-
-	// Testing template
+	// Write an int
 	if (!eeprom.eeprom_write(0, inttmp)) {
 		Serial.println("Failed to store INT");
 	} else {
 		Serial.println("INT correctly stored");
 	}
 
+	// write a float
 	if (!eeprom.eeprom_write(4, floattmp)) {
 		Serial.println("Failed to store FLOAT");
 	} else {
 		Serial.println("FLOAT correctly stored");
 	}
 
-	inttmp = 0;
-	floattmp = 0;
-	chartmp = 0;
+	// Flush
+	inttmp = floattmp = chartmp = 0;
 
-  Serial.print("C string length is: "); Serial.println(sizeof(c_string), DEC);
-  memset(c_string,0,sizeof(c_string));
+	Serial.print("C string length is: "); Serial.println(sizeof(c_string), DEC);
+	memset(c_string,0,sizeof(c_string));
 
-
-
+	
 	Serial.print("int: ");
 	eeprom.eeprom_read(0, &inttmp);
 	Serial.println(inttmp);
@@ -97,14 +97,12 @@ delay (2000);
 	Serial.println(chartmp);
 
 	Serial.print("chararray: ");
-	eeprom.eeprom_read(33, (byte *) c_string, 41);
+	eeprom.eeprom_read(33, (byte *) c_string, sizeof(c_string));
 	Serial.println(c_string);
 
 	Serial.println();
+	Serial.println("Printing value of each EEPROM address in HEX....");
 
-	for(pos = 26; pos < 1000; pos++) {
-		eeprom.eeprom_write(pos, (unsigned char) (pos % 256));
-	}
 
 	pos = 0;
  
@@ -113,13 +111,12 @@ delay (2000);
 void loop() {
   
 	Serial.print(pos);
-	Serial.print(": ");
-	Serial.print(eeprom.eeprom_read(pos));
+	Serial.print(": 0x");
+	Serial.print(eeprom.eeprom_read(pos), HEX);
 
 	Serial.println();
 
 	pos++;
-	pos %= 1000;
-	delay(1000);
+	delay(500);
 
 }

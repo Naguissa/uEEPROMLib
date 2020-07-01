@@ -99,6 +99,12 @@ void setup() {
 		Serial.println("Unaligned STRING correctly stored");
 	}
 
+   
+
+}
+
+void loop() {
+
   char *readMessageA;
   char *readMessageB;
   readMessageA = (char * ) malloc(512);
@@ -106,23 +112,20 @@ void setup() {
   Serial.println("-------------------------------------");
   Serial.println();
 
-  Serial.println("Page Aligned string (offset: 0):");
+  Serial.println("== Page Aligned string (offset: 0):");
   eeprom.eeprom_read(0, (byte *) readMessageA, strlen(longMessage));
   Serial.println(readMessageA);
 
   Serial.println();
 
-  Serial.println("Page Unaligned string (offset: 500):");
+  Serial.println("== Page Unaligned string (offset: 500):");
   eeprom.eeprom_read(500, (byte *) readMessageB, strlen(longMessage));
   Serial.println(readMessageB);
 
   Serial.println();
 
   Serial.println("-------------------------------------");
-   
 
-}
-
-void loop() {
+  delay(3000);
 	
 }

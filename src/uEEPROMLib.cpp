@@ -102,19 +102,26 @@ byte uEEPROMLib::_eeprom_read(const unsigned int address) {
  * @return true if bytes read are the same as requested
  */
 bool uEEPROMLib::eeprom_read(const unsigned int address, byte *data, const uint16_t n) {
+	
+#ifdef ARDUINO_ARCH_ESP8266 || ARDUINO_ARCH_ESP32	
+	#define UEEPROMLIB_I2C_BUFFER_SIZE 128
+#else
+	#define UEEPROMLIB_I2C_BUFFER_SIZE 32
+#endif
+
 	unsigned int _address = address;
 	byte * _data = data;
 	uint16_t remaining = n;
 	bool ret = true;
 	while (remaining > 0 && ret) {
-		if (remaining < 32) {
+		if (remaining < UEEPROMLIB_I2C_BUFFER_SIZE) {
 			ret = _eeprom_read_sub(_address, (data + n - remaining), (uint8_t) remaining);
 			remaining = 0;
 		} else {
-			ret = _eeprom_read_sub(_address, (data + n - remaining), 32);
-			remaining -= 32;
-			_address += 32;
-			_data += 32;
+			ret = _eeprom_read_sub(_address, (data + n - remaining), UEEPROMLIB_I2C_BUFFER_SIZE);
+			remaining -= UEEPROMLIB_I2C_BUFFER_SIZE;
+			_address += UEEPROMLIB_I2C_BUFFER_SIZE;
+			_data += UEEPROMLIB_I2C_BUFFER_SIZE;
 		}
 	}
 	return ret;
@@ -245,10 +252,10 @@ bool uEEPROMLib::_eeprom_write_sub(const unsigned int address, byte *data, const
 bool uEEPROMLib::eeprom_write(const unsigned int address, void *data, const uint16_t n = 0) {
 	
 	#ifdef ARDUINO_ARCH_AVR
-		const int max_page_write_bytes = 16; // keep the buffer to 16 bytes for AVR
+		#define MAX_PAGE_WRITE_BYTES 16 // keep the buffer to 16 bytes for AVR
 	#else
 		// ESP's have a 128 byte I2C buffer, but EEPROM can only write a maximum of 32 bytes at once
-		const int max_page_write_bytes = 32; 
+		#define MAX_PAGE_WRITE_BYTES 32
 	#endif
 
 
@@ -290,11 +297,11 @@ bool uEEPROMLib::eeprom_write(const unsigned int address, void *data, const uint
 	#endif				
 			if ( page_bytes_remaining < bytes_not_written) 
 			{
-				len = (page_bytes_remaining <= max_page_write_bytes) ? page_bytes_remaining:max_page_write_bytes;
+				len = (page_bytes_remaining <= MAX_PAGE_WRITE_BYTES) ? page_bytes_remaining:MAX_PAGE_WRITE_BYTES;
 			} 
 			else // page_bytes_remaining >= bytes_not_written
 			{ 
-				len = (bytes_not_written <= max_page_write_bytes) ? bytes_not_written:max_page_write_bytes;
+				len = (bytes_not_written <= MAX_PAGE_WRITE_BYTES) ? bytes_not_written:MAX_PAGE_WRITE_BYTES;
 			}
 			
 	#ifdef uEEPROMLIB_DEBUG				

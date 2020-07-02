@@ -58,6 +58,12 @@
 	 * \brief Wire very short delay - needed to give time to EEPROM to process Wire requests
 	 */
 	#define uEEPROMLIB_WIRE_SHORT_DELAY 1
+	
+	/**
+	 * \Serial Debug - To see what's going on in the library
+	 */	
+	 //#define uEEPROMLIB_DEBUG 1
+	
 
 
 
@@ -80,11 +86,14 @@
 			bool eeprom_write(const unsigned int, char);
 			bool eeprom_write(const unsigned int, unsigned char);
  			template <typename TW> bool eeprom_write(const unsigned int, const TW);
+			
 		private:
 			bool _eeprom_read_sub(const unsigned int, byte *, const uint8_t);
 			bool _eeprom_write_sub(const unsigned int, byte *, const uint8_t);
-			// Adresses
-			int _ee_address = UEEPROMLIB_ADDRESS;
+			
+			// Addresses
+			int _ee_address = UEEPROMLIB_ADDRESS; 
+			
 			// EEPROM read and write private functions - works with bytes
 			byte _eeprom_read(const unsigned int);
 			bool _eeprom_write(const unsigned int, const byte);
@@ -94,7 +103,7 @@
 	};
 
 
-	// Templates must be here because Arduino compiler incoptability to declare them on .cpp fil
+	// Templates must be here because Arduino compiler incompatibility to declare them on .cpp file
 
 	/**
 	 *

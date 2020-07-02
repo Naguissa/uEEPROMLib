@@ -102,19 +102,26 @@ byte uEEPROMLib::_eeprom_read(const unsigned int address) {
  * @return true if bytes read are the same as requested
  */
 bool uEEPROMLib::eeprom_read(const unsigned int address, byte *data, const uint16_t n) {
+	
+#ifdef ARDUINO_ARCH_ESP8266 || ARDUINO_ARCH_ESP32	
+	#define UEEPROMLIB_I2C_BUFFER_SIZE 128
+#else
+	#define UEEPROMLIB_I2C_BUFFER_SIZE 32
+#endif
+
 	unsigned int _address = address;
 	byte * _data = data;
 	uint16_t remaining = n;
 	bool ret = true;
 	while (remaining > 0 && ret) {
-		if (remaining < 32) {
+		if (remaining < UEEPROMLIB_I2C_BUFFER_SIZE) {
 			ret = _eeprom_read_sub(_address, (data + n - remaining), (uint8_t) remaining);
 			remaining = 0;
 		} else {
-			ret = _eeprom_read_sub(_address, (data + n - remaining), 32);
-			remaining -= 32;
-			_address += 32;
-			_data += 32;
+			ret = _eeprom_read_sub(_address, (data + n - remaining), UEEPROMLIB_I2C_BUFFER_SIZE);
+			remaining -= UEEPROMLIB_I2C_BUFFER_SIZE;
+			_address += UEEPROMLIB_I2C_BUFFER_SIZE;
+			_data += UEEPROMLIB_I2C_BUFFER_SIZE;
 		}
 	}
 	return ret;
@@ -134,6 +141,7 @@ bool uEEPROMLib::eeprom_read(const unsigned int address, byte *data, const uint1
  */
 bool uEEPROMLib::_eeprom_read_sub(const unsigned int address, byte *data, const uint8_t n) {
     bool ret = false;
+	byte temp = 0;
 	uEEPROMLIB_STM32_INIT_FIX()
 	uEEPROMLIB_YIELD
 	Wire.beginTransmission(_ee_address);
@@ -141,12 +149,24 @@ bool uEEPROMLib::_eeprom_read_sub(const unsigned int address, byte *data, const 
 	Wire.write((int)(address & 0xFF)); // LSB
     delay(uEEPROMLIB_WIRE_DELAY); // Little delay to assure EEPROM is able to process data; if missing and inside for look meses some values
 	if (Wire.endTransmission() == 0) {
+		
 		Wire.requestFrom(_ee_address, (int) n);
+	#ifdef uEEPROMLIB_DEBUG			
+		Serial.print	("Requesting from address: ");
+		Serial.print	(address, DEC);
+		Serial.print	(" num: ");
+		Serial.println	(n, DEC);
+	#endif
+		
         delay(uEEPROMLIB_WIRE_DELAY); // Little delay to assure EEPROM is able to process data; if missing and inside for look meses some values
 		if(Wire.available()) {
 			byte i = 0, j;
             for (; i < n && Wire.available(); i++) {
-                *(data + i) = (byte) Wire.read();
+				temp = (byte) Wire.read();
+                *(data + i) = temp;
+	#ifdef uEEPROMLIB_DEBUG					
+				Serial.print("read "); Serial.print(i, DEC); Serial.print(" :"); Serial.println((byte)temp, HEX);
+	#endif
  		        delay(uEEPROMLIB_WIRE_SHORT_DELAY); // Little delay to assure EEPROM is able to process data; if missing and inside for look meses some values
             	uEEPROMLIB_YIELD
 				// Added to wait if needed but cut after a failure (timeout)
@@ -194,7 +214,7 @@ bool uEEPROMLib::_eeprom_write(const unsigned int address, const byte data) {
 /**
  * \brief Write one block to EEPROM
  *
- * Internal INSECURE function to write up to 16 byte blocks (arduino has a 32 byte buffer but it includes 2-byte address
+ * Internal INSECURE function to write up to n byte blocks (arduino has a 32 byte buffer but it includes 2-byte address
  *
  * @param address Address inside EEPROM to write to
  * @param data byte to write
@@ -206,8 +226,14 @@ bool uEEPROMLib::_eeprom_write_sub(const unsigned int address, byte *data, const
 	Wire.beginTransmission(_ee_address);
 	Wire.write((int)(address >> 8)); // MSB
 	Wire.write((int)(address & 0xFF)); // LSB
+	#ifdef uEEPROMLIB_DEBUG
+	//Serial.print("Writing at address: "); Serial.print(address, DEC);
+	#endif
 	for (; idx < n; idx++) {
 		Wire.write(*(data + idx));
+	#ifdef uEEPROMLIB_DEBUG		
+		Serial.print("_eeprom_write_sub writing: "); Serial.println( (byte) *(data + idx), HEX);
+	#endif		
 		uEEPROMLIB_YIELD
 	}
 	delay(uEEPROMLIB_WIRE_DELAY); // Little delay to assure EEPROM is able to process data; if missing and inside for look meses some values
@@ -223,39 +249,84 @@ bool uEEPROMLib::_eeprom_write_sub(const unsigned int address, byte *data, const
  * @param n uint8_t number of bytes to write
  * @return bool true if successful
  */
-bool uEEPROMLib::eeprom_write(const unsigned int address, void *data, const uint16_t n) {
+bool uEEPROMLib::eeprom_write(const unsigned int address, void *data, const uint16_t n = 0) {
+	
+	#ifdef ARDUINO_ARCH_AVR
+		#define MAX_PAGE_WRITE_BYTES 16 // keep the buffer to 16 bytes for AVR
+	#else
+		// ESP's have a 128 byte I2C buffer, but EEPROM can only write a maximum of 32 bytes at once
+		#define MAX_PAGE_WRITE_BYTES 32
+	#endif
+
+
+	
 	bool r = true;
 	byte *dataptr;
-
-	uint8_t sublen;
-	uint16_t act;
-	uint16_t i = 0;
-
-
+	
+	uint16_t len = 0;
+	unsigned int temp_address = address;
+	uint16_t bytes_not_written = n;
+	uint16_t page_bytes_remaining = 0;	
+	
 	if (n == 0) {
 		r = false;
 	} else if (n == 1) {
-		_eeprom_write(address, (byte) *((byte *) data));
+		r = _eeprom_write(address, (byte) *((byte *) data));
 	} else {
-		dataptr = (byte *) data;
-		// head part:
-		if (address % 16 != 0) {
-			r = _eeprom_write_sub(address, dataptr, (uint8_t) (address % 16));
-			i = address % 16;
-			dataptr += address % 16;
-		}
-		// 16 byte middle parts
-		for (; r && i + 16 <= n; i += 16, dataptr += 16) {
-			r &= _eeprom_write_sub(address + i, dataptr, 16);
-		}
-		// tail, if any
-		if (r && i < n) {
-			r &= _eeprom_write_sub(address, dataptr, (uint8_t) (n - i));
-		}
+		dataptr = (byte *) data;	
+		
+	#ifdef uEEPROMLIB_DEBUG			
+		Serial.print("Data Length to write: " );
+		Serial.println(n, DEC);
+	#endif	
 
+		while (bytes_not_written > 0)
+		{
+			
+	#ifdef uEEPROMLIB_DEBUG					
+			Serial.print("Start EEPROM address: ");
+			Serial.println(temp_address, DEC);	
+	#endif				
+			
+			// Calculate remaining bytes in current page from the point of the current
+			// address offset. Remember, each page is 32 bytes per the datasheet
+			page_bytes_remaining = (32 - (temp_address % 32) );
+	#ifdef uEEPROMLIB_DEBUG				
+			Serial.print("Page bytes remaining: ");
+			Serial.println(page_bytes_remaining, DEC);
+	#endif				
+			if ( page_bytes_remaining < bytes_not_written) 
+			{
+				len = (page_bytes_remaining <= MAX_PAGE_WRITE_BYTES) ? page_bytes_remaining:MAX_PAGE_WRITE_BYTES;
+			} 
+			else // page_bytes_remaining >= bytes_not_written
+			{ 
+				len = (bytes_not_written <= MAX_PAGE_WRITE_BYTES) ? bytes_not_written:MAX_PAGE_WRITE_BYTES;
+			}
+			
+	#ifdef uEEPROMLIB_DEBUG				
+			Serial.print("Writing bytes of length: ");
+			Serial.println(len, DEC);
+	#endif	
+			// Write it
+			r &= _eeprom_write_sub(temp_address, dataptr, len);
+			bytes_not_written -= len;
+			temp_address += len;
+			dataptr += len;	
+			
+	#ifdef uEEPROMLIB_DEBUG				
+			Serial.print("Bytes not written: ");
+			Serial.println(bytes_not_written, DEC);
+			
+			Serial.print("End EEPROM address: ");
+			Serial.println(temp_address, DEC);			
+	#endif				
+		} // end while loop
 	}
+		
 	return r;
-}
+
+} // end eeprom_write
 
 
 /**

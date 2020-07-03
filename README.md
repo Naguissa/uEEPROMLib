@@ -8,6 +8,7 @@ I2C EEPROM library. Split from uRTCLib https://github.com/Naguissa/uRTCLib
 
 This library controls any I2C EEPROM, independent ones or incorporated on DS1307 or DS3231 RTCs.
 
+*Note: On ATTiny, you need TnyWireM library in order to compile. It's available on Library manager.
 
 ## How do I get set up? ##
 

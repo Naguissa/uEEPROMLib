@@ -2,3 +2,4 @@ Naguissa - https://github.com/Naguissa
 hyperion11 - https://github.com/hyperion11 - Multibyte EEPROM read/write
 linusnielsen - https://github.com/linusnielsen - Remove stray Serial.print
 Alex Wong - https://github.com/alw1746 - Find long reads bug, #3
+mrfaptastic - https://github.com/mrfaptastic - Enhancenments on paged reads/writes

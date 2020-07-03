@@ -8,7 +8,7 @@
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/ueepromlib-arduino-libreria-simple-y-eficaz-para-e-t225.html">https://www.foroelectro.net/librerias-arduino-ide-f29/ueepromlib-arduino-libreria-simple-y-eficaz-para-e-t225.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
  * @see <a href="https://github.com/Naguissa/uRTCLib">https://github.com/Naguissa/uRTCLib</a>
- * @version 1.1.0
+ * @version 1.2.0
  */
 /** \file uEEPROMLib.h
  *   \brief uEEPROMLib header file
@@ -19,7 +19,15 @@
 	 */
 	#define UEEPROMLIB
 	#include "Arduino.h"
-	#include "Wire.h"
+	#ifndef UEEPROMLIB_WIRE
+		#if defined(ARDUINO_attiny) || defined(ARDUINO_AVR_ATTINYX4) || defined(ARDUINO_AVR_ATTINYX5) || defined(ARDUINO_AVR_ATTINYX7) || defined(ARDUINO_AVR_ATTINYX8) || defined(ARDUINO_AVR_ATTINYX61) || defined(ARDUINO_AVR_ATTINY43) || defined(ARDUINO_AVR_ATTINY828) || defined(ARDUINO_AVR_ATTINY1634) || defined(ARDUINO_AVR_ATTINYX313)
+			#include <TinyWireM.h>                  // I2C Master lib for ATTinys which use USI
+			#define UEEPROMLIB_WIRE TinyWireM
+		#else
+			#include <Wire.h>
+			#define UEEPROMLIB_WIRE Wire
+		#endif
+	#endif
 
 	/**
 	 * \brief Default EEPROM address
@@ -54,17 +62,25 @@
 	 * \brief Wire delay - needed to give time to EEPROM to process Wire requests
 	 */
 	#define uEEPROMLIB_WIRE_DELAY 6
+
 	/**
 	 * \brief Wire very short delay - needed to give time to EEPROM to process Wire requests
 	 */
 	#define uEEPROMLIB_WIRE_SHORT_DELAY 1
-	
-	/**
-	 * \Serial Debug - To see what's going on in the library
-	 */	
-	 //#define uEEPROMLIB_DEBUG 1
-	
 
+	// BUFFER_LENGTH should come from Wire library
+	 #ifdef BUFFER_LENGTH
+	/**
+	 * \brief Max buffer length, taken from Wire library if defined
+	 */
+		#define UEEPROMLIB_WIRE_MAX_RBUFFER (BUFFER_LENGTH - 2)
+	#else
+	/**
+	 * \brief Max buffer length, failsafe if not defined in Wire library
+	 */
+		#define UEEPROMLIB_WIRE_MAX_RBUFFER 32
+	#endif
+		#define UEEPROMLIB_WIRE_MAX_WBUFFER (UEEPROMLIB_WIRE_MAX_RBUFFER - 2)
 
 
 	class uEEPROMLib {
@@ -77,23 +93,28 @@
 
 			void set_address(const uint8_t);
 			// EEPROM read functions
-			bool eeprom_read(const unsigned int, byte *, const uint16_t);
+			bool eeprom_read(const unsigned int, byte *, unsigned int);
 			template <typename TR> void eeprom_read(const unsigned int, TR *);
 			byte eeprom_read(const unsigned int);
 
 			// EEPROM write functions
-			bool eeprom_write(const unsigned int, void *, const uint16_t);
+			bool eeprom_write(const unsigned int, void *, const unsigned int);
 			bool eeprom_write(const unsigned int, char);
 			bool eeprom_write(const unsigned int, unsigned char);
  			template <typename TW> bool eeprom_write(const unsigned int, const TW);
-			
+
+			/**
+			 * \brief: EEPROM page size control
+			 */
+			uint8_t page_size = 32; // common size, as AT24C32 (datasheet on extras)
+
 		private:
 			bool _eeprom_read_sub(const unsigned int, byte *, const uint8_t);
 			bool _eeprom_write_sub(const unsigned int, byte *, const uint8_t);
-			
+
 			// Addresses
-			int _ee_address = UEEPROMLIB_ADDRESS; 
-			
+			int _ee_address = UEEPROMLIB_ADDRESS;
+
 			// EEPROM read and write private functions - works with bytes
 			byte _eeprom_read(const unsigned int);
 			bool _eeprom_write(const unsigned int, const byte);

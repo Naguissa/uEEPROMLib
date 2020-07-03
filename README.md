@@ -28,6 +28,8 @@ You can find all documentation and extras in this repository: https://github.com
 
 You can read documentation online here: https://naguissa.github.io/uEEPROMLib_doc_and_extras/
 
+IMPORTANT NOTE: It's a little bit hidden, but you can set your EEPROM page size changing public variable uEEPROMLIBVariable.page_size
+
 
 
 ## Examples ##

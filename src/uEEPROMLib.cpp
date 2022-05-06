@@ -8,7 +8,7 @@
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/ueepromlib-arduino-libreria-simple-y-eficaz-para-e-t225.html">https://www.foroelectro.net/librerias-arduino-ide-f29/ueepromlib-arduino-libreria-simple-y-eficaz-para-e-t225.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
  * @see <a href="https://github.com/Naguissa/uRTCLib">https://github.com/Naguissa/uRTCLib</a>
- * @version 1.2.0
+ * @version 1.2.1
  */
 #include <Arduino.h>
 	#ifndef UEEPROMLIB_WIRE
@@ -154,15 +154,18 @@ bool uEEPROMLib::_eeprom_read_sub(const unsigned int address, byte *data, uint8_
         delay(uEEPROMLIB_WIRE_DELAY); // Little delay to assure EEPROM is able to process data; if missing and inside for look meses some values
 		if(UEEPROMLIB_WIRE.available()) {
 			uint8_t i = 0, j;
-            for (; i < n && UEEPROMLIB_WIRE.available(); i++) {
+            while (i < n && UEEPROMLIB_WIRE.available()) {
 				temp = (byte) UEEPROMLIB_WIRE.read();
                 *(data + i) = temp;
  		        delay(uEEPROMLIB_WIRE_SHORT_DELAY); // Little delay to assure EEPROM is able to process data; if missing and inside for look meses some values
             	uEEPROMLIB_YIELD
+            	i++;
 				// Added to wait if needed but cut after a failure (timeout)
-            	for (j = 0; j < 255 && !UEEPROMLIB_WIRE.available(); j++) {
-	 		        delay(uEEPROMLIB_WIRE_SHORT_DELAY); // Little delay to assure EEPROM is able to process data; if missing and inside for loop meses some values
-		        	uEEPROMLIB_YIELD
+				if (i < n) {
+	            	for (j = 0; j < 255 && !UEEPROMLIB_WIRE.available(); j++) {
+		 		        delay(uEEPROMLIB_WIRE_SHORT_DELAY); // Little delay to assure EEPROM is able to process data; if missing and inside for loop meses some values
+			        	uEEPROMLIB_YIELD
+					}
 				}
             }
             ret = (i == n);

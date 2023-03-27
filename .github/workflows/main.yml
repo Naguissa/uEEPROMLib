@@ -24,5 +24,4 @@ jobs:
             # This is formatted as a YAML list, which makes it possible to have multiple sketch paths if needed.
             - ./examples/
           libraries: |
-            # this doesn't use any extra library, so just use an empty list
-            -
+            - source-path: ./

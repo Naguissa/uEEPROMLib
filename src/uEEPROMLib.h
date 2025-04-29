@@ -8,7 +8,7 @@
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/ueepromlib-arduino-libreria-simple-y-eficaz-para-e-t225.html">https://www.foroelectro.net/librerias-arduino-ide-f29/ueepromlib-arduino-libreria-simple-y-eficaz-para-e-t225.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
  * @see <a href="https://github.com/Naguissa/uRTCLib">https://github.com/Naguissa/uRTCLib</a>
- * @version 1.2.1
+ * @version 1.2.2
  */
 /** \file uEEPROMLib.h
  *   \brief uEEPROMLib header file
@@ -80,7 +80,17 @@
 	 */
 		#define UEEPROMLIB_WIRE_MAX_RBUFFER 32
 	#endif
-		#define UEEPROMLIB_WIRE_MAX_WBUFFER (UEEPROMLIB_WIRE_MAX_RBUFFER - 2)
+	
+	#define UEEPROMLIB_WIRE_MAX_WBUFFER (UEEPROMLIB_WIRE_MAX_RBUFFER - 2)
+
+	#ifdef ARDUINO_ARCH_MEGAAVR
+		/**
+		 * \brief MEGAAVR core uses int instead size_t
+		 */
+		#define UEEPROMLIB_SIZE_T int
+	#else
+		#define UEEPROMLIB_SIZE_T size_t
+	#endif
 
 
 	class uEEPROMLib {

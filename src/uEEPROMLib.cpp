@@ -8,7 +8,7 @@
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/ueepromlib-arduino-libreria-simple-y-eficaz-para-e-t225.html">https://www.foroelectro.net/librerias-arduino-ide-f29/ueepromlib-arduino-libreria-simple-y-eficaz-para-e-t225.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
  * @see <a href="https://github.com/Naguissa/uRTCLib">https://github.com/Naguissa/uRTCLib</a>
- * @version 1.2.1
+ * @version 1.2.2
  */
 #include <Arduino.h>
 	#ifndef UEEPROMLIB_WIRE
@@ -116,7 +116,7 @@ bool uEEPROMLib::eeprom_read(const unsigned int address, byte *data, const unsig
 	bool ret = true;
 	while (remaining > 0 && ret) {
 		if (remaining <= UEEPROMLIB_WIRE_MAX_RBUFFER) {
-			ret = _eeprom_read_sub(_address, (data + n - remaining), remaining);
+			ret = _eeprom_read_sub(_address, (data + n - remaining), (UEEPROMLIB_SIZE_T) remaining);
 			remaining = 0;
 		} else {
 			ret = _eeprom_read_sub(_address, (data + n - remaining), UEEPROMLIB_WIRE_MAX_RBUFFER);
@@ -150,7 +150,7 @@ bool uEEPROMLib::_eeprom_read_sub(const unsigned int address, byte *data, uint8_
 	UEEPROMLIB_WIRE.write((int)(address & 0xFF)); // LSB
     delay(uEEPROMLIB_WIRE_DELAY); // Little delay to assure EEPROM is able to process data; if missing and inside for look meses some values
 	if (UEEPROMLIB_WIRE.endTransmission() == 0) {
-		UEEPROMLIB_WIRE.requestFrom(_ee_address, (int) n);
+		UEEPROMLIB_WIRE.requestFrom(_ee_address, (UEEPROMLIB_SIZE_T) n);
         delay(uEEPROMLIB_WIRE_DELAY); // Little delay to assure EEPROM is able to process data; if missing and inside for look meses some values
 		if(UEEPROMLIB_WIRE.available()) {
 			uint8_t i = 0, j;

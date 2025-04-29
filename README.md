@@ -1,8 +1,9 @@
 # Arduino, ESP8266, STM32, ESP32 and others uEEPROMLib
 
-Master status:   [![Build Status](https://travis-ci.org/Naguissa/uEEPROMLib.svg?branch=master)](https://travis-ci.org/Naguissa/uEEPROMLib)
+![Arduino CI](https://github.com/Naguissa/uEEPROMLib/workflows/arduino_ci/badge.svg)
 
-## What is this repository for? ##
+
+## What is this repository for?
 
 I2C EEPROM library. Split from uRTCLib https://github.com/Naguissa/uRTCLib
 
@@ -10,7 +11,7 @@ This library controls any I2C EEPROM, independent ones or incorporated on DS1307
 
 *Note: On ATTiny, you need TnyWireM library in order to compile. It's available on Library manager.
 
-## How do I get set up? ##
+## How do I get set up?
 
 You can get it from Arduino libraries directly, searching by uEEPROMLib.
 
@@ -22,7 +23,7 @@ For manual installation:
 
 
 
-## Documentation and extras ##
+## Documentation and extras
 
 You can find all documentation and extras in this repository: https://github.com/Naguissa/uEEPROMLib_doc_and_extras
 
@@ -32,14 +33,14 @@ IMPORTANT NOTE: It's a little bit hidden, but you can set your EEPROM page size 
 
 
 
-## Examples ##
+## Examples
 
 Included on example folder, available on Arduino IDE.
 
 
 
 
-## Who do I talk to? ##
+## Who do I talk to?
 
  * [Naguissa](https://github.com/Naguissa)
  * https://www.foroelectro.net/librerias-arduino-ide-f29/ueepromlib-arduino-libreria-simple-y-eficaz-para-e-t225.html
@@ -47,7 +48,7 @@ Included on example folder, available on Arduino IDE.
 
 
 
-## Contribute ##
+## Contribute
 
 Any code contribution, report or comment are always welcome. Don't hesitate to use GitHub for that.
 

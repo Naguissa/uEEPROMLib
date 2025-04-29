@@ -15,19 +15,20 @@
   #if defined(ARDUINO_attiny) || defined(ARDUINO_AVR_ATTINYX4) || defined(ARDUINO_AVR_ATTINYX5) || defined(ARDUINO_AVR_ATTINYX7) || defined(ARDUINO_AVR_ATTINYX8) || defined(ARDUINO_AVR_ATTINYX61) || defined(ARDUINO_AVR_ATTINY43) || defined(ARDUINO_AVR_ATTINY828) || defined(ARDUINO_AVR_ATTINY1634) || defined(ARDUINO_AVR_ATTINYX313)
     #include <TinyWireM.h>                  // I2C Master lib for ATTinys which use USI
     #define WIRE TinyWireM
+    #include <SoftwareSerial.h>
+    const int rx=3;
+    const int tx=4;
+
+    SoftwareSerial SSerial(rx,tx);
   #else
     #include <Wire.h>
     #define WIRE Wire
+    #define SSerial Serial
   #endif
 #endif
 #include "uEEPROMLib.h"
 
 
-#include <SoftwareSerial.h>
-const int rx=3;
-const int tx=4;
-
-SoftwareSerial SSerial(rx,tx);
 
 // uEEPROMLib eeprom;
 uEEPROMLib eeprom(0x57);
